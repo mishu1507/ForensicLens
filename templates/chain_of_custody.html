@@ -2,41 +2,53 @@
 <html>
 <head>
 <title>Chain of Custody</title>
-<style>
-body { background:#020617; color:#e5e7eb; font-family:Arial; }
-.container {
-    max-width:600px;
-    margin:80px auto;
-    padding:40px;
-    background:rgba(255,255,255,.05);
-    border-radius:16px;
-}
-input, button {
-    width:100%;
-    padding:12px;
-    margin:10px 0;
-    border-radius:8px;
-    border:none;
-}
-button {
-    background:linear-gradient(135deg,#38bdf8,#2563eb);
-    color:white;
-    font-size:1rem;
-}
-</style>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
 
-<div class="container">
-<h2>Chain of Custody</h2>
-<p>Enter investigator details for forensic documentation.</p>
+<!-- HEADER -->
+<div class="header">
+    <div class="brand">
+        <div class="brand-icon">🛡</div>
+        <div>
+            <h1>ForensicLens</h1>
+            <span>Chain of Custody</span>
+        </div>
+    </div>
+</div>
 
-<form method="POST">
-    <input name="investigator_name" placeholder="Investigator Name" required>
-    <input name="investigator_id" placeholder="Investigator ID" required>
-    <input name="organization" placeholder="Organization / Institution" required>
-    <button type="submit">Continue</button>
-</form>
+<div class="container" style="max-width:620px">
+
+    <div class="panel">
+        <h2>Chain of Custody</h2>
+        <p class="subtitle" style="text-align:left">
+            Enter investigator details for official forensic documentation.
+        </p>
+
+        <form method="POST">
+
+            <div class="field">
+                👤 <input name="investigator_name" placeholder="Investigator Name" required>
+            </div>
+
+            <div class="field" style="margin-top:12px">
+                🆔 <input name="investigator_id" placeholder="Investigator ID" required>
+            </div>
+
+            <div class="field" style="margin-top:12px">
+                🏢 <input name="organization" placeholder="Organization / Institution" required>
+            </div>
+
+            <button type="submit" style="width:100%;margin-top:24px">
+                Continue
+            </button>
+
+        </form>
+    </div>
+
 </div>
 
 </body>
