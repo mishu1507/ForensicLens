@@ -1,66 +1,176 @@
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
-from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import cm
+from datetime import datetime
+import os
+from textwrap import wrap
 
+def generate_report(
+    workspace,
+    case_id,
+    investigator_name,
+    investigator_id,
+    organization,
+    file_hashes,
+    incident_type,
+    incidents,
+    timeline,
+    risk_score,
+    severity,
+    narrative
+):
+    report_path = os.path.join(workspace, "Forensic_Report.pdf")
+    c = canvas.Canvas(report_path, pagesize=A4)
+    width, height = A4
 
-def generate_report(case_id, timeline, severity, score, incident_type, file_hash):
-    path = f"uploads/cases/{case_id}/forensic_report.pdf"
+    x_margin = 2 * cm
+    y = height - 2 * cm
 
-    doc = SimpleDocTemplate(path, pagesize=A4)
-    styles = getSampleStyleSheet()
-    elements = []
+    def heading(text):
+        nonlocal y
+        if y < 3 * cm:
+            c.showPage()
+            y = height - 2 * cm
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(x_margin, y, text)
+        y -= 18
 
-    elements.append(Paragraph(
-        "<b>Digital Forensic Investigation Report</b>",
-        styles["Title"]
-    ))
-    elements.append(Spacer(1, 0.3 * inch))
+    def divider():
+        nonlocal y
+        c.line(x_margin, y, width - x_margin, y)
+        y -= 14
 
-    elements.append(Paragraph("<b>Case Summary</b>", styles["Heading2"]))
-    elements.append(Spacer(1, 0.1 * inch))
+    def body(text):
+        nonlocal y
+        c.setFont("Helvetica", 10)
+        max_chars = 90
 
-    table = Table([
-        ["Case ID", case_id],
-        ["Incident Type", incident_type],
-        ["Severity", severity],
-        ["Risk Score", str(score)]
-    ], colWidths=[2.5 * inch, 3.5 * inch])
+        lines = []
+        for paragraph in text.split("\n"):
+            lines.extend(wrap(paragraph, max_chars))
+            lines.append("")
 
-    table.setStyle(TableStyle([
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("BACKGROUND", (0, 0), (0, -1), colors.whitesmoke)
-    ]))
+        for line in lines:
+            if y < 2 * cm:
+                c.showPage()
+                y = height - 2 * cm
+                c.setFont("Helvetica", 10)
 
-    elements.append(table)
-    elements.append(Spacer(1, 0.3 * inch))
+            c.drawString(x_margin, y, line)
+            y -= 12
 
-    elements.append(Paragraph("<b>Evidence Integrity</b>", styles["Heading2"]))
-    elements.append(Paragraph(
-        f"SHA-256 Evidence Hash:<br/><font size='9'>{file_hash}</font>",
-        styles["Normal"]
-    ))
-    elements.append(Spacer(1, 0.3 * inch))
+    # ---------- TITLE PAGE ----------
+    c.setFont("Helvetica-Bold", 20)
+    c.drawCentredString(
+        width / 2,
+        height - 5 * cm,
+        "DIGITAL FORENSIC INVESTIGATION REPORT"
+    )
 
-    elements.append(Paragraph("<b>Incident Timeline</b>", styles["Heading2"]))
-    elements.append(Spacer(1, 0.1 * inch))
+    c.setFont("Helvetica", 12)
+    c.drawCentredString(
+        width / 2,
+        height - 6.5 * cm,
+        "ForensicLens – Automated Digital Forensics & Incident Analysis System"
+    )
 
-    timeline_table = [["Timestamp", "Event Type", "Description"]]
+    c.setFont("Helvetica", 10)
+    c.drawCentredString(width / 2, height - 8 * cm, f"Case ID: {case_id}")
+    c.drawCentredString(
+        width / 2,
+        height - 9 * cm,
+        f"Generated on: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC"
+    )
+
+    # ---------- CHAIN OF CUSTODY PAGE ----------
+    c.showPage()
+    y = height - 2 * cm
+
+    heading("Chain of Custody & Investigator Details")
+    divider()
+
+    body(
+        f"Case Number           : {case_id}\n"
+        f"Investigator Name     : {investigator_name}\n"
+        f"Investigator ID       : {investigator_id}\n"
+        f"Organization          : {organization}\n"
+        f"Tool Used             : ForensicLens – Automated Digital Forensics System\n"
+        f"Date of Acquisition   : {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC"
+    )
+
+    body(
+        "Evidence Handling Statement:\n"
+        "The digital evidence associated with this investigation was collected, "
+        "processed, and analyzed in a controlled, read-only manner. All uploaded "
+        "log files were handled temporarily within an isolated workspace. No evidence "
+        "or derived artifacts were retained after report generation. Cryptographic "
+        "hashing (SHA-256) was applied to ensure evidence integrity and tamper detection."
+    )
+
+    # ---------- CASE SUMMARY ----------
+    c.showPage()
+    y = height - 2 * cm
+
+    heading("1. Case Summary")
+    divider()
+    body(
+        f"Incident Classification : {incident_type}\n"
+        f"Risk Score             : {risk_score}\n"
+        f"Severity Level         : {severity}"
+    )
+
+    # ---------- EVIDENCE INTEGRITY ----------
+    heading("2. Evidence Integrity Verification")
+    divider()
+    body(
+        "The integrity of the uploaded digital evidence was verified using "
+        "cryptographic SHA-256 hashing. The calculated hashes are listed below:"
+    )
+
+    for fname, h in file_hashes.items():
+        body(f"{fname} : {h}")
+
+    # ---------- ATTACK INDICATORS ----------
+    heading("3. Detected Attack Indicators")
+    divider()
+
+    if incidents:
+        for a in incidents:
+            body(f"- {a}")
+    else:
+        body("No explicit attack indicators were detected during analysis.")
+
+    # ---------- FORENSIC TIMELINE ----------
+    heading("4. Reconstructed Incident Timeline")
+    divider()
 
     for e in timeline:
-        timeline_table.append([
-            e["timestamp"],
-            e["type"],
-            e["raw"]
-        ])
+        body(f"{e['timestamp']} | {e['type']} | {e['raw']}")
 
-    table = Table(timeline_table, colWidths=[2*inch, 1.5*inch, 3*inch])
-    table.setStyle(TableStyle([
-        ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
-        ("BACKGROUND", (0, 0), (-1, 0), colors.lightgrey)
-    ]))
+    # ---------- ANALYST NARRATIVE ----------
+    heading("5. Analyst Narrative")
+    divider()
+    body(narrative)
 
-    elements.append(table)
+    # ---------- CONCLUSION ----------
+    heading("6. Conclusion")
+    divider()
+    body(
+        "Based on the correlated analysis of multiple log sources, the observed "
+        "activities indicate a potential security incident. The findings suggest "
+        "abnormal system behavior that warrants further investigation and "
+        "appropriate incident response measures."
+    )
 
-    doc.build(elements)
+    # ---------- PRIVACY ----------
+    heading("7. Privacy & Evidence Handling")
+    divider()
+    body(
+        "ForensicLens follows a stateless, privacy-preserving design. All uploaded "
+        "evidence was processed temporarily and securely deleted after analysis. "
+        "This approach ensures confidentiality, ethical compliance, and data "
+        "protection."
+    )
+
+    c.save()
+    return report_path

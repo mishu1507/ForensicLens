@@ -11,7 +11,7 @@ ForensicLens is a web-based digital forensics platform designed to automate post
 - 📊 Risk scoring and severity classification
 - 🧾 Dynamic, evidence-driven attack narrative generation
 - 📄 Automated PDF forensic report generation
-- 🎨 Interactive dashboard with visualizations
+- 📊 Advanced SIEM Investigation Workspace (Visual Hunt, AI Copilot, Rule Engine)
 
 
 ## 🛠️ Technology Stack
@@ -30,27 +30,33 @@ ForensicLens is a web-based digital forensics platform designed to automate post
 ## 📁 Project Structure
 FORENSICLENS/
 │
-├── app.py
-├── requirements.txt
-├── README.md
+├── app.py                     # Main Flask application entry point
+├── requirements.txt           # Python dependencies
+├── README.md                  # Project documentation
 │
-├── modules/
-│ ├── parser.py
-│ ├── auth_detector.py
-│ ├── risk_engine.py
-│ ├── incident_analyzer.py
-│ ├── narrative_generator.py
-│ ├── report_generator.py
+├── modules/                   # Core forensic analysis logic
+│   ├── __pycache__/            # Compiled Python cache files
+│   │
+│   ├── auth_detector.py        # Authentication anomaly detection
+│   ├── hash_integrity.py       # File hash validation & integrity checks
+│   ├── incident_analyzer.py   # Central incident correlation engine
+│   ├── mitre_mapper.py        # MITRE ATT&CK technique mapping
+│   ├── narrative_generator.py # Human-readable investigation narrative
+│   ├── parser.py              # Log & evidence parsing logic
+│   ├── report_generator.py    # PDF/HTML forensic report generation
+│   ├── risk_engine.py         # Risk scoring & threat prioritization
+│   ├── severity_explainer.py  # Severity justification & explanation
+│   ├── timeline.py            # Event timeline reconstruction
+│   └── workspace_manager.py   # Case/workspace handling & isolation
 │
-├── templates/
-│ ├── index.html
-│ ├── dashboard.html
+├── static/                    # Static frontend assets
+│   └── style.css              # Global UI styling
 │
-├── static/
-│ └── style.css
-│
-├── uploads/
-│ └── cases/
+└── templates/                 # HTML templates (Jinja2)
+    ├── index.html             # Landing & upload page
+    ├── dashboard.html         # Advanced SIEM workspace
+    └── chain_of_custody.html  # Evidence custody tracking
+
 
 
 
@@ -58,7 +64,7 @@ FORENSICLENS/
 
  Clone or download the project
 
-git clone <repository-url>
+git clone https://github.com/mishu1507/ForensicLens
 cd ForensicLens
 
 pip install -r requirements.txt
